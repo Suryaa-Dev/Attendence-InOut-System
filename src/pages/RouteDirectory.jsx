@@ -44,7 +44,7 @@ const RouteDirectory = () => {
     <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-6">
       <div className="bg-white shadow-lg rounded-2xl p-8 w-full max-w-2xl">
         <h1 className="text-3xl font-bold text-gray-700 mb-4 text-center">
-          ⚙️ Access Control System - Route Directory
+          ⚙️ In-Out Access System - Route Directory
         </h1>
         <p className="text-gray-900 text-center mb-6">
           Explore the list of active routes to preview and test different UI modules under development.
