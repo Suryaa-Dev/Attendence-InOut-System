@@ -17,7 +17,7 @@ const RouteDirectory = () => {
   const routes = [
     { name: "Login Page", path: "/login" },
     { name: "Admin Dashboard", path: "/admin-dashboard" },
-    { name: "Add New User (Admin)", path: "/employee-check" },
+    { name: "Check In/Check Out", path: "/employee-check" },
     { name: "Security-Guard Dashboard", path: "/guard-dashboard" },
     { name: "Attendance History", path: "/attendance-history" },
     { name: "Add New User (Admin)", path: "/add-user" },
