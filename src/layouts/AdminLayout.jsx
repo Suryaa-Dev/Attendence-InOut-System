@@ -1,97 +1,74 @@
-import React, { useState } from "react";
-// import { Link, Outlet, useNavigate } from "react-router-dom";
-import { Link, Outlet} from "react-router-dom";
+// src/layouts/AdminLayout.jsx
 
-const AdminLayout = () => {
-  const [isOpen, setIsOpen] = useState(true);
-  // const navigate = useNavigate();
+import React, { useContext } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
 
-  // const handleLogout = () => {
-  //   alert("Logged out successfully!");
-  //   navigate("/login");
-  // };
+const AdminLayout = ({ children }) => {
+  const { user, logout } = useContext(AuthContext);
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
-      {/* Sidebar */}
-      <div
-        className={`${
-          isOpen ? "w-64" : "w-20"
-        } bg-gray-950 text-white transition-all duration-300 flex flex-col`}
-      >
-        <div className="flex items-center justify-between p-4 border-b border-blue-700">
-          <h1
-            className={`text-xl font-semibold ${
-              !isOpen && "hidden"
-            } md:block transition-all duration-300`}
-          >
-            Admin Panel
-          </h1>
-          <button
-            onClick={() => setIsOpen(!isOpen)}
-            className="text-white text-lg focus:outline-none"
-          >
-            {isOpen ? "◀" : "▶"}
-          </button>
+    <div>
+      {/* Top Navbar */}
+      <nav className="navbar navbar-expand-lg navbar-dark bg-dark px-3">
+        <Link className="navbar-brand fw-bold" to="/admin/dashboard">
+          Admin Panel
+        </Link>
+
+        <button
+          className="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#adminNavbar"
+        >
+          <span className="navbar-toggler-icon"></span>
+        </button>
+
+        <div className="collapse navbar-collapse" id="adminNavbar">
+          <ul className="navbar-nav me-auto ms-3">
+            <li className="nav-item">
+              <Link className="nav-link" to="/admin/dashboard">
+                Dashboard
+              </Link>
+            </li>
+
+            <li className="nav-item">
+              <Link className="nav-link" to="/admin/users">
+                Users
+              </Link>
+            </li>
+
+            <li className="nav-item">
+              <Link className="nav-link" to="/admin/reports">
+                Reports
+              </Link>
+            </li>
+
+            <li className="nav-item">
+              <Link className="nav-link" to="/admin/visitors">
+                Visitors
+              </Link>
+            </li>
+          </ul>
+
+          {/* Right - User Info */}
+          <div className="d-flex align-items-center text-white me-3">
+            <span className="me-3">{user?.email}</span>
+            <button className="btn btn-sm btn-outline-light" onClick={handleLogout}>
+              Logout
+            </button>
+          </div>
         </div>
-
-        <nav className="flex-1 p-4 space-y-4">
-          <Link
-            to="/admin-dashboard"
-            className="flex items-center space-x-3 hover:bg-blue-700 rounded-lg px-3 py-2 transition"
-          >
-            <span>🏠</span>
-            {isOpen && <span>Dashboard</span>}
-          </Link>
-
-          <Link
-            to="/employee-check"
-            className="flex items-center space-x-3 hover:bg-blue-700 rounded-lg px-3 py-2 transition"
-          >
-            <span>📋</span>
-            {isOpen && <span>Check-in/Check-out</span>}
-          </Link>
-
-          <Link
-            to="/add-user"
-            className="flex items-center space-x-3 hover:bg-blue-700 rounded-lg px-3 py-2 transition"
-          >
-            <span>👥</span>
-            {isOpen && <span>Add User</span>}
-          </Link>
-
-          <Link
-            to="/attendance-history"
-            className="flex items-center space-x-3 hover:bg-blue-700 rounded-lg px-3 py-2 transition"
-          >
-            <span>📋</span>
-            {isOpen && <span>Attendance Logs</span>}
-          </Link>
-
-          <Link
-            to="/reports"
-            className="flex items-center space-x-3 hover:bg-blue-700 rounded-lg px-3 py-2 transition"
-          >
-            <span>📈</span>
-            {isOpen && <span>Reports</span>}
-          </Link>
-        </nav>
-
-        {/* <div className="p-4 border-t border-blue-700">
-          <button
-            onClick={handleLogout}
-            className="flex items-center space-x-3 text-red-300 hover:text-white transition"
-          >
-            <span>🚪</span>
-            {isOpen && <span>Logout</span>}
-          </button>
-        </div> */}
-      </div>
+      </nav>
 
       {/* Main Content */}
-      <div className="flex-1 p-6 overflow-y-auto">
-        <Outlet />
-      </div>
+      <div style={{ padding: "20px" }}>{children}</div>
     </div>
   );
 };

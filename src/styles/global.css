@@ -1,0 +1,8 @@
+.dashboard-card {
+  transition: 0.2s ease-in-out;
+}
+
+.dashboard-card:hover {
+  background-color: #e8f0ff;
+  transform: translateY(-3px);
+}
