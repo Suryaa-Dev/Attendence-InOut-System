@@ -1,40 +1,90 @@
 // src/context/AttendanceContext.jsx
-import { createContext, useState } from "react";
+import { createContext, useState, useEffect, useCallback } from "react";
 
 export const AttendanceContext = createContext();
 
+const STORAGE_KEY = "attendanceLogs";
+
+const getTodayISO = () => new Date().toISOString().slice(0, 10);
+
+const getInitialLogs = () => {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    return stored ? JSON.parse(stored) : [];
+  } catch {
+    return [];
+  }
+};
+
 export const AttendanceProvider = ({ children }) => {
-  const [logs, setLogs] = useState(
-    JSON.parse(localStorage.getItem("attendanceLogs")) || []
-  );
+  const [logs, setLogs] = useState(getInitialLogs);
 
-  const checkIn = (userId) => {
-    const newLog = {
-      id: Date.now(),
-      userId,
-      date: new Date().toLocaleDateString(),
-      checkIn: new Date().toLocaleTimeString(),
-      checkOut: ""
-    };
+  // Sync to localStorage whenever logs change
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(logs));
+  }, [logs]);
 
-    const updated = [...logs, newLog];
-    setLogs(updated);
-    localStorage.setItem("attendanceLogs", JSON.stringify(updated));
-  };
+  // Create a new check-in if user is not already checked in today
+  const checkIn = useCallback((userId) => {
+    const today = getTodayISO();
+    const now = new Date().toISOString();
 
-  const checkOut = (userId) => {
-    const updated = logs.map((log) =>
-      log.userId === userId && !log.checkOut
-        ? { ...log, checkOut: new Date().toLocaleTimeString() }
-        : log
-    );
+    setLogs((prev) => {
+      const hasOpen = prev.some(
+        (log) =>
+          log.userId === userId &&
+          log.date === today &&
+          !log.checkOut
+      );
 
-    setLogs(updated);
-    localStorage.setItem("attendanceLogs", JSON.stringify(updated));
-  };
+      if (hasOpen) {
+        // already checked in & not checked out → ignore
+        return prev;
+      }
+
+      const newLog = {
+        id: Date.now(),
+        userId,
+        date: today,
+        checkIn: now,
+        checkOut: null,
+      };
+
+      return [...prev, newLog];
+    });
+  }, []);
+
+  // Close the latest open log for today, if any
+  const checkOut = useCallback((userId) => {
+    const today = getTodayISO();
+    const now = new Date().toISOString();
+
+    setLogs((prev) => {
+      let updated = false;
+
+      const next = prev.map((log) => {
+        if (
+          !updated &&
+          log.userId === userId &&
+          log.date === today &&
+          !log.checkOut
+        ) {
+          updated = true;
+          return { ...log, checkOut: now };
+        }
+        return log;
+      });
+
+      return next;
+    });
+  }, []);
+
+  const clearAll = useCallback(() => {
+    setLogs([]);
+  }, []);
 
   return (
-    <AttendanceContext.Provider value={{ logs, checkIn, checkOut }}>
+    <AttendanceContext.Provider value={{ logs, checkIn, checkOut, clearAll }}>
       {children}
     </AttendanceContext.Provider>
   );

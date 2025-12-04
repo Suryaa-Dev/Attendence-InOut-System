@@ -1,5 +1,11 @@
+// src/routes/AppRoutes.jsx
 import React, { useContext } from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 
 import Login from "../pages/Login";
 import AdminDashboard from "../pages/admin/Dashboard";
@@ -12,25 +18,66 @@ import Reports from "../pages/admin/Reports";
 
 import { AuthContext } from "../context/AuthContext";
 
-const AppRoutes = () => {
+const getHomePathForRole = (role) => {
+  switch (role) {
+    case "admin":
+      return "/admin";
+    case "receptionist":
+      return "/reception/manual-entry";
+    case "user":
+      return "/me/attendance";
+    default:
+      return "/login";
+  }
+};
+
+const PrivateRoute = ({ children, role }) => {
   const { user } = useContext(AuthContext);
 
-  // Protect routes
-  const PrivateRoute = ({ children, role }) => {
-    if (!user) return <Navigate to="/login" />;
-    if (role && user.role !== role) return <Navigate to="/login" />;
-    return children;
-  };
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  // If a role is required and doesn't match, send user to their own home
+  if (role && user.role !== role) {
+    return <Navigate to={getHomePathForRole(user.role)} replace />;
+  }
+
+  return children;
+};
+
+const AppRoutes = () => {
+  const { user } = useContext(AuthContext);
 
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Login />} />
-        <Route path="/login" element={<Login />} />
-
-        {/* Admin Routes */}
+        {/* Default route: if logged in, go to home based on role */}
         <Route
-          path="/admin/dashboard"
+          path="/"
+          element={
+            user ? (
+              <Navigate to={getHomePathForRole(user.role)} replace />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
+
+        <Route
+          path="/login"
+          element={
+            user ? (
+              <Navigate to={getHomePathForRole(user.role)} replace />
+            ) : (
+              <Login />
+            )
+          }
+        />
+
+        {/* Admin routes */}
+        <Route
+          path="/admin"
           element={
             <PrivateRoute role="admin">
               <AdminDashboard />
@@ -45,17 +92,6 @@ const AppRoutes = () => {
             </PrivateRoute>
           }
         />
-
-        {/* Receptionist */}
-        <Route
-          path="/reception/manual-entry"
-          element={
-            <PrivateRoute role="receptionist">
-              <ManualEntry />
-            </PrivateRoute>
-          }
-        />
-
         <Route
           path="/admin/visitors"
           element={
@@ -64,7 +100,6 @@ const AppRoutes = () => {
             </PrivateRoute>
           }
         />
-
         <Route
           path="/admin/reports"
           element={
@@ -74,9 +109,19 @@ const AppRoutes = () => {
           }
         />
 
-        {/* User */}
+        {/* Receptionist routes */}
         <Route
-          path="/user/my-attendance"
+          path="/reception/manual-entry"
+          element={
+            <PrivateRoute role="receptionist">
+              <ManualEntry />
+            </PrivateRoute>
+          }
+        />
+
+        {/* User routes */}
+        <Route
+          path="/me/attendance"
           element={
             <PrivateRoute role="user">
               <MyAttendance />
@@ -84,6 +129,7 @@ const AppRoutes = () => {
           }
         />
 
+        {/* Fallback */}
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
